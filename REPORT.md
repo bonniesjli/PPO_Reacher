@@ -45,7 +45,7 @@ Adam epsilong (EPSILON) = 1e-5
 
 ### Plot of Rewards
 
-![Alt Text](link)
+![Alt Text](https://github.com/bonniesjli/PPO_Reacher_UnityML/blob/master/asset/PPO.png)
 
 ### Ideas for Future Work
 * Hyperparameter optimization
