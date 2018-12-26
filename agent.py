@@ -10,10 +10,9 @@ device = torch.device("cpu")
 
 BATCH_SIZE = 32    # minibatch size
 GAMMA = 0.99       # discount rate
-TAU = 0.95         
+TAU = 0.95         # tau
 
-GRADIENT_CLIP = 5
-ROLLOUT_LENGTH = 2048
+GRADIENT_CLIP = 5   # gradient clip
 NUM_EPOCHS = 10     # optimization epochs
 CLIP = 0.2          # PPO clip 
 
@@ -50,10 +49,10 @@ class Agent(object):
         log_probs = [None]*(len(rollout) - 1)
         returns = [None]*(len(rollout) - 1)
         advantages = [None]*(len(rollout) - 1)
+        next_return = 0
         
         shp = (num_agents, 1)
         advantage = torch.Tensor(np.zeros(shp))
-        next_return = 0
         for i in reversed(range(len(rollout)-1)):
             # rollout --> tuple ( s, a, p(a|s), r, dones, V(s) ) FOR ALL AGENT
             state, action, log_prob, reward, done, value = rollout[i]
@@ -89,9 +88,8 @@ class Agent(object):
             returns[i] = g_return
             advantages[i] = advantage
             
-        storage = states, actions, log_probs, returns, advantages
-        s, a, p, r, a = map(lambda x: torch.cat(x, dim = 0), zip*(storage))
-                                
+        storage = [states, actions, log_probs, returns, advantages]
+        s, a, p, r, a = map(lambda x: torch.cat(x, dim = 0), zip*(storage))                  
         self.learn(s, a, p, r, a)
                
     def act(self, states):
@@ -119,7 +117,7 @@ class Agent(object):
 
                 log_probs = dist.log_prob(action_samples)
                 log_probs = torch.sum(log_probs, dim=1, keepdim=True)
-                entropy = dist.entropy()
+                entropy = dist.entropy().mean()
 
                 ratio = (log_probs - lod_prob_samples).exp()
 
@@ -129,8 +127,8 @@ class Agent(object):
                 # Clipped Surrogate Objective
                 obj_clipped = ratio.clamp(1.0 - CLIP, 1.0 + CLIP) * advantage_samples
 
-                # Compute policy loss: L = min[ r(θ), clip ( r(θ), 1-Ɛ, 1+Ɛ )*A ] - β * KL
-                policy_loss = -torch.min(obj, obj_clipped).mean(0) - BETA * entropy.mean()
+                # Compute policy loss: L = min[ r(θ), clip ( r(θ), 1-Ɛ, 1+Ɛ )*A ] - β * entropy
+                policy_loss = -torch.min(obj, obj_clipped).mean(0) - BETA * entropy
 
                 # Compute value loss: L = ( V(s) - V_t )^2
                 value_loss = (return_samples - values).pow(2).mean()
