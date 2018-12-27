@@ -46,6 +46,7 @@ Adam epsilong (EPSILON) = 1e-5<br>
 ### Plot of Rewards
 
 ![Alt Text](https://github.com/bonniesjli/PPO_Reacher_UnityML/blob/master/asset/PPO.png)
+The agent was able to solve the environment in 224 episodes. 
 
 ### Ideas for Future Work
 * Hyperparameter optimization
