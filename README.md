@@ -53,7 +53,8 @@ Run `PPO.ipynb` to run the agent.
 * `PPO.ipynb` - load the environment explore the environment, train the agent or run the trained agent
 * `agent.py` contains the agent class 
 * `model.py` contains the neural network models the agents employ. 
-* `ppo_checkpoint.pth` contains trained model weights.
+* `ppo_checkpoint.pth` contains trained model weights
+* `REPORT.md` contains description of implementation, results, and ideas for future work.<br>
 
 ### Reference
 * "Proximal Policy Optimization", Schulman et al, 2015  <br>
