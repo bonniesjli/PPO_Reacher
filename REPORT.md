@@ -1,12 +1,12 @@
 ## Project Report
 ### Learning Algorithm
-This project uses the algorithm Proximal Policy Optimization (PPO) where we aim to maximize the surrogate objective
-r(θ) =  π(a_t|s_t) / π_old(a_t|s_t)<br> 
+This project uses the algorithm Proximal Policy Optimization (PPO) where we aim to maximize the surrogate objective:
 objective = E [ r(θ) * A^t]<br> 
+    where r(θ) =  π(a_t|s_t) / π_old(a_t|s_t)<br> 
 
 To avoid an excessively large policy update, PPO uses a clipped surrogate objective that clips the objective in respect to r(θ) in the range of (1-Ɛ, 1+Ɛ). We take the mininum of the original objective and the clipped objective. 
 
-The objective is further augmented by introducing an entropy bonus that ensures sufficient exploration. Combining these terms, the following objective is obtained:
+The objective is further augmented by introducing an entropy bonus that ensures sufficient exploration. Combining these terms, the following objective is obtained:<br> 
 Polic Loss: L_CLIP(θ) = min[ r(θ), clip ( r(θ), 1-Ɛ, 1+Ɛ )*A ] - β * entropy<br> 
 Value Loss: L_VF(θ) = ( Vθ(s_t) - V_t_target )^2<br> 
 
@@ -14,13 +14,13 @@ The PPO algorithm implemented is Actor-Critic style, with a Actor (Policy) netwo
 
 #### Model Architecture
 The PPO algorithm implemented is Actor-Critic style, with a Actor (Policy) network and a Critic (Value) network sharing the same architecture (except for the output size). <br> 
-ACTOR NETWORK<br> 
-* Input layer is equal to the length of states vector = 33
-* First hidden layer consists of 256 nodes
-* Second hidden layer consists of 256 nodes
-* Output layer is equal to the length of actions vector = 4
+##### Actor Network <br> 
+* Input layer is equal to the length of states vector = 33<br> 
+* First hidden layer consists of 256 nodes<br> 
+* Second hidden layer consists of 256 nodes<br> 
+* Output layer is equal to the length of actions vector = 4<br> 
 
-CRITIC NETWORK<br> 
+##### Critic Network <br> 
 * Input layer is equal to the length of states vector = 33
 * First hidden layer consists of 256 nodes
 * Second hidden layer consists of 256 nodes
@@ -29,18 +29,18 @@ CRITIC NETWORK<br>
 
 #### Hyperparameters
 ##### Interactions
-Discount rate (GAMMA) = 0.99
-Rollout length (ROLLOUT_LENGTH) = 1024
+Discount rate (GAMMA) = 0.99<br> 
+Rollout length (ROLLOUT_LENGTH) = 1024<br> 
 
 ##### Learning Process
-PPO clip (CLIP) = 0.2
-Entropy coefficient (BETA) = 0.01
+PPO clip (CLIP) = 0.2<br> 
+Entropy coefficient (BETA) = 0.01<br> 
 
 ##### Optimization
-Number of epochs for optimization (NUM_EPOCHS) = 10
-Gradient clip for optimization (GRADIENT_CLIP) = 5
-Adam Learning Rate (LR) = 3e-4
-Adam epsilong (EPSILON) = 1e-5
+Number of epochs for optimization (NUM_EPOCHS) = 10<br> 
+Gradient clip for optimization (GRADIENT_CLIP) = 5<br> 
+Adam Learning Rate (LR) = 3e-4<br> 
+Adam epsilong (EPSILON) = 1e-5<br> 
 
 
 ### Plot of Rewards
