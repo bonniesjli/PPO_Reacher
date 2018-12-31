@@ -59,7 +59,3 @@ Run `PPO.ipynb` to run the agent.
 ### Reference
 * "Proximal Policy Optimization", Schulman et al, 2015  <br>
 https://arxiv.org/abs/1707.06347 <br>
-* Github Repository `RL-Adventure-2`, higgsfield. <br>
-https://github.com/higgsfield/RL-Adventure-2<br>
-* Github Repository `DeepRL`, Shangton Zhang. <br>
-https://github.com/higgsfield/RL-Adventure-2<br>
