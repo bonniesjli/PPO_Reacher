@@ -119,7 +119,7 @@ class Agent(object):
                 log_probs = torch.sum(log_probs, dim=1, keepdim=True)
                 entropy = dist.entropy().mean()
 
-                ratio = (log_probs - lod_prob_samples).exp()
+                ratio = (log_probs - log_prob_samples).exp()
 
                 # Surrogate Objctive
                 obj = ratio * advantage_samples
