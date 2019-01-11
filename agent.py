@@ -44,19 +44,17 @@ class Agent(object):
     def step(self, rollout, num_agents):
         """ Compute advantage estimates at each time steps given a trajectory"""
         
-        states = [None]*(len(rollout) - 1)
-        actions = [None]*(len(rollout) - 1)
-        log_probs = [None]*(len(rollout) - 1)
-        returns = [None]*(len(rollout) - 1)
-        advantages = [None]*(len(rollout) - 1)
-        next_return = 0
+        storage = [None]* (len(rollout) - 1)
         
-        shp = (num_agents, 1)
-        advantage = torch.Tensor(np.zeros(shp))
+        shape = (num_agents, 1)
+        advantage = torch.Tensor(np.zeros(shape))
+        
         for i in reversed(range(len(rollout)-1)):
             # rollout --> tuple ( s, a, p(a|s), r, dones, V(s) ) FOR ALL AGENT
+            # rollout --> last row (s, none, none, none, pending_value) FOR ALL AGENT
             state, action, log_prob, reward, done, value = rollout[i]
-            # last step
+            
+            # last step - next_return = pending_value
             if i == len(rollout) - 2:
                 next_return = rollout[i+1][-1]
 
@@ -69,28 +67,27 @@ class Agent(object):
             # G(t) = r + G(t+1)
             g_return = reward + GAMMA * next_return * done
             next_return = g_return
+            # g_return = reward + GAMMA * g_return*done
             
             # Compute TD error
             td_error = reward + GAMMA * next_value - value
             # Compute advantages
             advantage = advantage * TAU * GAMMA * done + td_error
             
-            # NOT RIGHT -------------------------------------------
-            # states.append(torch.cat(state, dim = 0))
-            # actions.append(torch.cat(action, dim = 0))
-            # log_probs.append(torch.cat(log_prob, dim = 0))
-            # returns.append(torch.cat(g_return, dim = 0))
-            # advantages.append(torch.cat(advantage, dim = 0))
-            
-            states[i] = state
-            actions[i] = action
-            log_probs[i] = log_prob
-            returns[i] = g_return
-            advantages[i] = advantage
-            
-        storage = [states, actions, log_probs, returns, advantages]
-        s, a, p, r, a = map(lambda x: torch.cat(x, dim = 0), zip*(storage))                  
-        self.learn(s, a, p, r, a)
+            # Add (s, a, p(a|s), g, advantage) 
+            storage[i] = [state, action, log_prob, g_return, advantage]
+        
+        state, action, log_prob, g_return, advantage = map(lambda x: torch.cat(x, dim=0), zip(*storage))   
+        advantage = (advantage - advantage.mean()) / advantage.std()
+        
+        # Check dimensions
+        # print ("States :", states.size(0), " * ", states.size(1) )
+        # print ("Actions :", actions.size(0), " * ", actions.size(1) )
+        # print ("Log Prob :", log_prob.size(0), " * ", log_prob.size(1) )
+        # print ("Return :", g_return.size(0), " * ", g_return.size(1) )
+        # print ("Advantage :", advantage.size(0), " * ", advantage.size(1) )
+        
+        self.learn(state, action, log_prob, g_return, advantage, num_agents)
                
     def act(self, states):
         """Given state as per current policy model, returns action, log probabilities and estimated state values"""
@@ -101,12 +98,12 @@ class Agent(object):
 
         return actions, log_probs, values
     
-    def sample(self, states, actions, log_probs_old, returns, advantages):
-        """Randomly sample learning batches from trajectory"""
+    def sample(self, states, actions, log_probs, returns, advantages):
+        """Randomly sample learning batches from trajectory"""  
         rand_idx = np.random.randint(0, states.size(0), BATCH_SIZE)
-        return states[rand_idx, :], actions[rand_idx, :], log_probs_old[rand_idx, :], returns[rand_idx, :], advantages[rand_idx, :]
+        return states[rand_idx, :], actions[rand_idx, :], log_probs[rand_idx, :], returns[rand_idx, :], advantages[rand_idx, :]
         
-    def learn(self, states, actions, log_probs, returns, advantages, num_agents):
+    def learn(self, states, actions, log_probs_old, returns, advantages, num_agents):
         """ Optimize surrogate loss with policy and value parameters using given learning batches."""
 
         for _ in range(NUM_EPOCHS):
